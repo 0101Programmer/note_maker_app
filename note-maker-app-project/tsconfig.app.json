@@ -3,6 +3,13 @@
   "compilerOptions": {
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
 
+    /* Настройка алиасов */
+    "baseUrl": ".", // Базовая директория
+    "paths": {
+      "@/*": ["src/*"] // Настройка алиаса @
+    },
+
+    "types": ["node"], // Добавляем типы Node.js
     /* Linting */
     "strict": true,
     "noUnusedLocals": true,
