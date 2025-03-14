@@ -1,0 +1,15 @@
+services:
+  note-maker-app-project:
+    build:
+      context: ../note-maker-app-project
+      dockerfile: ../note-maker-app-project/Dockerfile
+    ports:
+      - "5175:80"
+    restart: always
+
+  redis:
+    image: redis:latest
+    container_name: my-redis
+    ports:
+      - "6379:6379"
+    restart: always

@@ -32,3 +32,6 @@ tortoise-orm==0.24.2
 typing_extensions==4.12.2
 uvicorn==0.34.0
 yarl==1.18.3
+
+redis~=5.2.1
+cryptography~=44.0.2

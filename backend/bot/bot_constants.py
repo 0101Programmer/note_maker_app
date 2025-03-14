@@ -7,3 +7,7 @@ load_dotenv()
 
 
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
+
+
+FASTAPI_HOST = os.getenv("FASTAPI_HOST")
+FASTAPI_PORT = int(os.getenv("FASTAPI_PORT"))

@@ -1,8 +1,0 @@
-services:
-  note-maker-app-project:
-    build:
-      context: ./note-maker-app-project
-      dockerfile: Dockerfile
-    ports:
-      - "5175:80"
-    restart: always
