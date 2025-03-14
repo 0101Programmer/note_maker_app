@@ -5,12 +5,13 @@ from fastapi import APIRouter, HTTPException
 
 from ..api_constants import VUE_BASE_URL
 from redis_config import redis_client
+from ...db_config.models import User
 
 set_get_session_router = APIRouter(prefix="/set_get_session", tags=["Session settings"])
 
 # Маршрут для перенаправления пользователя в веб-приложение
 @set_get_session_router.get("/{session_maker_id}/{tg_username}")
-def set_get_session(session_maker_id: str, tg_username: str):
+async def set_get_session(session_maker_id: str, tg_username: str):
     # Проверяем, существует ли session_maker_id в Redis
     if not redis_client.get(session_maker_id):
         raise HTTPException(status_code=401, detail="Недействительный ключ, попробуйте запросить ссылку у бота ещё раз")
@@ -28,6 +29,12 @@ def set_get_session(session_maker_id: str, tg_username: str):
     else:
         session_id = session_id
 
+    # Проверяем, существует ли пользователь в базе данных
+    user_exists = await User.filter(username=tg_username).exists()
+    if not user_exists:
+        # Если пользователя нет, создаём нового
+        await User.create(username=tg_username)
+
     # Формируем URL для редиректа
     redirect_url = f"{VUE_BASE_URL}/{session_id}/{tg_username}"
 
@@ -35,7 +42,7 @@ def set_get_session(session_maker_id: str, tg_username: str):
     return RedirectResponse(url=redirect_url)
 
 @set_get_session_router.get("/check_session/{session_id}/{tg_username}")
-def check_session(session_id: str, tg_username: str):
+async def check_session(session_id: str, tg_username: str):
     # Проверяем, существует ли tg_username в Redis
     if not redis_client.exists(tg_username):
         return {"valid": False, "message": "User session not found"}

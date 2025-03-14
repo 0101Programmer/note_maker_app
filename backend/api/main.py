@@ -2,6 +2,7 @@ from dotenv import load_dotenv
 from fastapi import FastAPI
 from tortoise.contrib.fastapi import register_tortoise
 
+from backend.api.routes.notes import notes_router
 from .routes.sessions_maker import set_get_session_router
 from .api_constants import DATABASE_URL, FASTAPI_HOST, FASTAPI_PORT, VUE_BASE_URL
 from .routes.users import users_router
@@ -17,7 +18,7 @@ app = FastAPI()
 # Подключаем маршруты
 app.include_router(users_router)
 app.include_router(set_get_session_router)
-
+app.include_router(notes_router)
 # Настройка CORS
 origins = [
     VUE_BASE_URL,  # Разрешаем запросы с фронтенда
@@ -41,7 +42,7 @@ register_tortoise(
 )
 
 @app.get("/")
-def read_root():
+async def read_root():
     return {"message": "Welcome to the API!"}
 
 if __name__ == "__main__":

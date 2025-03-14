@@ -12,7 +12,7 @@ try:
     print("Запуск бота...")
     bot_process = subprocess.Popen(bot, shell=True)
 
-    print('Запуск докер...')
+    print('Запуск докера...')
     docker_process = subprocess.Popen(docker, shell=True)
 
     # Ожидание завершения процессов
