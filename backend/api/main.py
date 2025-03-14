@@ -3,8 +3,11 @@ from fastapi import FastAPI
 from tortoise.contrib.fastapi import register_tortoise
 
 from .routes.sessions_maker import set_get_session_router
-from .api_constants import DATABASE_URL, FASTAPI_HOST, FASTAPI_PORT
+from .api_constants import DATABASE_URL, FASTAPI_HOST, FASTAPI_PORT, VUE_BASE_URL
 from .routes.users import users_router
+
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 # Загружаем переменные из .env файла
 load_dotenv()
@@ -14,6 +17,19 @@ app = FastAPI()
 # Подключаем маршруты
 app.include_router(users_router)
 app.include_router(set_get_session_router)
+
+# Настройка CORS
+origins = [
+    VUE_BASE_URL,  # Разрешаем запросы с фронтенда
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,  # Список разрешённых источников
+    allow_credentials=True,  # Разрешаем отправку cookies и заголовков авторизации
+    allow_methods=["*"],     # Разрешаем все HTTP-методы (GET, POST и т.д.)
+    allow_headers=["*"],     # Разрешаем все заголовки
+)
 
 # Регистрация Tortoise ORM
 register_tortoise(

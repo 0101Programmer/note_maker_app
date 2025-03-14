@@ -9,7 +9,7 @@ const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
-      path: '/:tg_username',  // Динамический параметр
+      path: '/:session_id/:tg_username',  // Два динамических параметра
       name: 'home',
       component: Home,
     },
@@ -29,6 +29,16 @@ const router = createRouter({
           next();
         }
       },
+    },
+    {
+      path: '/access-denied',
+      name: 'access-denied',
+      component: () => import('@/views/AccessDenied.vue'),
+    },
+    {
+      path: '/iternal-error',
+      name: 'iternal-error',
+      component: () => import('@/views/IternalError.vue'),
     },
     {
       path: '/error', // Страница ошибки

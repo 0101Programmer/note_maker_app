@@ -31,6 +31,7 @@
 import { defineComponent } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useUserStore } from '@/stores/userStore';
+import axios from 'axios';
 
 export default defineComponent({
   setup() {
@@ -38,13 +39,38 @@ export default defineComponent({
     const router = useRouter();
     const userStore = useUserStore();
 
-    // Получаем параметр из URL и приводим его к строке
+    // Получаем параметры из URL
     const tgUsername = Array.isArray(route.params.tg_username)
-      ? route.params.tg_username[0] // Берем первый элемент, если это массив
-      : route.params.tg_username; // Или используем строку напрямую
+      ? route.params.tg_username[0]
+      : route.params.tg_username;
 
-    // Устанавливаем tg_username в хранилище
-    userStore.setTgUsername(tgUsername);
+    const sessionID = Array.isArray(route.params.session_id)
+      ? route.params.session_id[0]
+      : route.params.session_id;
+
+    // Функция для проверки сессии
+    const checkSession = async () => {
+      try {
+        // Отправляем запрос на проверку сессии
+        const response = await axios.get(`http://localhost:8000/set_get_session/check_session/${sessionID}/${tgUsername}`);
+
+        // Проверяем результат
+        if (response.data.valid) {
+          // Если сессия валидна, сохраняем данные в хранилище
+          userStore.setTgUsername(tgUsername);
+          userStore.setSessionID(sessionID);
+        } else {
+          // Если сессия недействительна, перенаправляем на страницу ошибки
+          await router.push({name: 'access-denied'});
+        }
+      } catch (error) {
+        console.error("Ошибка при проверке сессии:", error);
+        await router.push({name: 'iternal-error'});
+      }
+    };
+
+    // Вызываем проверку сессии при загрузке страницы
+    checkSession();
 
     // Переход к списку заметок
     const goToNotes = () => {

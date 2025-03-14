@@ -2,6 +2,7 @@ import subprocess
 
 fastapi_main = 'python -m backend.api.main'
 bot = 'python -m backend.bot.bot'
+docker = 'docker-compose -f docker/docker-compose.yml up --build'
 
 # Запуск команд параллельно
 try:
@@ -10,6 +11,9 @@ try:
 
     print("Запуск бота...")
     bot_process = subprocess.Popen(bot, shell=True)
+
+    print('Запуск докер...')
+    docker_process = subprocess.Popen(docker, shell=True)
 
     # Ожидание завершения процессов
     fastapi_process.wait()
