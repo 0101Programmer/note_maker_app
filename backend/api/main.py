@@ -1,14 +1,17 @@
-import os
-from tortoise.contrib.fastapi import register_tortoise
-from fastapi import FastAPI
 from dotenv import load_dotenv
+from fastapi import FastAPI
+from tortoise.contrib.fastapi import register_tortoise
 
-from constants import FASTAPI_HOST, FASTAPI_PORT, DATABASE_URL
+from .api_constants import DATABASE_URL, FASTAPI_HOST, FASTAPI_PORT
+from .routes.users import users_router
 
 # Загружаем переменные из .env файла
 load_dotenv()
 
 app = FastAPI()
+
+# Подключаем маршруты
+app.include_router(users_router)
 
 # Регистрация Tortoise ORM
 register_tortoise(
@@ -19,7 +22,10 @@ register_tortoise(
     add_exception_handlers=True,
 )
 
-# запуск FastAPI, Vue и телеграм бота
+@app.get("/")
+def read_root():
+    return {"message": "Welcome to the API!"}
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host=FASTAPI_HOST, port=FASTAPI_PORT)

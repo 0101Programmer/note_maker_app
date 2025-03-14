@@ -6,7 +6,7 @@ from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 from aiogram.filters import Command
 
-from constants import TELEGRAM_BOT_TOKEN
+from .bot_constants import TELEGRAM_BOT_TOKEN
 
 # Настройка логирования
 logging.basicConfig(
