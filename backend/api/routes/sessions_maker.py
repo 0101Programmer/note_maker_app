@@ -76,3 +76,21 @@ async def check_session(request: Request):
 
     except Exception as e:
         return JSONResponse(status_code=500, content={"valid": False, "message": f"Internal server error: {str(e)}"})
+
+
+@set_get_session_router.post("/check_session_timer")
+async def check_session_timer(request: Request):
+    data = await request.json()
+    tg_username = data.get("tg_username")
+
+    # Получаем TTL из Redis
+    ttl = redis_client.ttl(tg_username)
+
+    if ttl == -2:  # Ключ не существует
+        return JSONResponse(content={"error": "Session expired or does not exist"}, status_code=404)
+    elif ttl == -1:  # Ключ существует, но без TTL
+        return JSONResponse(content={"ttl": None}, status_code=200)
+
+    # Возвращаем TTL в секундах
+    return JSONResponse(content={"ttl": ttl}, status_code=200)
+

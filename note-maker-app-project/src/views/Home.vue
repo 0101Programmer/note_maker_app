@@ -3,6 +3,37 @@
     <!-- Заголовок -->
     <h1 class="text-3xl font-bold mb-8 text-center">Привет, {{ tgUsername }}!</h1>
 
+    <!-- Отображение таймера -->
+    <div v-if="sessionTTL !== null" class="mb-4 text-center">
+      <p class="text-lg font-semibold text-gray-200">
+        Ваша сессия активна. Время до завершения:
+        <span class="text-xl font-bold text-white">{{ formattedTime }}</span>
+      </p>
+      <p class="text-sm text-gray-400 mt-2">
+        После завершения сессии вам потребуется перезайти в приложение.
+      </p>
+
+      <!-- Кнопка "Продлить сессию" -->
+      <div class="mt-4">
+        <button
+          @click="extendSession"
+          class="px-4 py-2 bg-gradient-to-r from-purple-500 to-indigo-600 text-white font-bold rounded-full shadow-lg hover:scale-105 transition-transform duration-200"
+        >
+          Продлить сессию
+        </button>
+      </div>
+    </div>
+
+    <!-- Сообщение об истечении сессии -->
+    <div v-else class="mb-4 text-center">
+      <p class="text-lg font-semibold text-red-400">
+        Сессия истекла или не существует.
+      </p>
+      <p class="text-sm text-gray-400 mt-2">
+        Пожалуйста, войдите в приложение заново.
+      </p>
+    </div>
+
     <!-- Контейнер для меню -->
     <div class="w-full max-w-lg p-6 bg-white/10 backdrop-blur-lg rounded-2xl shadow-lg">
       <!-- Меню -->
@@ -28,7 +59,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue';
+import { defineComponent, ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useUserStore } from '@/stores/userStore';
 import axios from 'axios';
@@ -48,7 +79,74 @@ export default defineComponent({
       ? route.params.session_id[0]
       : route.params.session_id;
 
-    // Функция для проверки сессии
+    // Состояние для хранения TTL
+    const sessionTTL = ref<number | null>(null);
+
+    // Форматирование времени
+    const formattedTime = computed(() => {
+      if (sessionTTL.value === null) return '';
+      const minutes = Math.floor(sessionTTL.value / 60);
+      const seconds = sessionTTL.value % 60;
+      return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    });
+
+    // Функция для проверки TTL сессии
+    const fetchSessionTTL = async () => {
+      try {
+        const fastApiHost = import.meta.env.VITE_FASTAPI_HOST;
+        const fastApiPort = import.meta.env.VITE_FASTAPI_PORT;
+
+        const response = await axios.post(
+          `http://${fastApiHost}:${fastApiPort}/set_get_session/check_session_timer`,
+          { tg_username: tgUsername },
+          { headers: { 'Content-Type': 'application/json' } }
+        );
+
+        const ttl = response.data.ttl;
+        if (ttl !== null && ttl > 0) {
+          sessionTTL.value = ttl;
+        } else {
+          sessionTTL.value = null; // Сессия истекла
+        }
+      } catch (error) {
+        console.error('Ошибка при получении TTL:', error);
+        sessionTTL.value = null;
+      }
+    };
+
+    // Периодическое обновление TTL
+    const startTTLUpdate = () => {
+      const interval = setInterval(() => {
+        if (sessionTTL.value !== null && sessionTTL.value > 0) {
+          sessionTTL.value -= 1; // Уменьшаем TTL каждую секунду
+        } else {
+          clearInterval(interval); // Останавливаем интервал, если TTL <= 0
+        }
+      }, 1000);
+
+      // Обновляем TTL с сервера каждые 30 секунд
+      const serverUpdateInterval = setInterval(fetchSessionTTL, 30000);
+
+      // Очищаем интервалы при размонтировании компонента
+      onUnmounted(() => {
+        clearInterval(interval);
+        clearInterval(serverUpdateInterval);
+      });
+    };
+
+    // Вызываем проверку сессии при загрузке страницы
+    onMounted(() => {
+      fetchSessionTTL();
+      startTTLUpdate();
+    });
+
+    // Заглушка для продления сессии
+    const extendSession = () => {
+      alert('Функция продления сессии пока недоступна. Выберите время продления.');
+      console.log('Продление сессии запрошено');
+    };
+
+    // Функция для проверки ID сессии
     const checkSession = async () => {
       try {
 
@@ -78,7 +176,6 @@ export default defineComponent({
         } else {
           // Если сессия недействительна, перенаправляем на страницу ошибки
           await router.push({ name: 'access-denied' });
-          console.log('message', response.data.message);
         }
       } catch (error) {
         console.error('Ошибка при проверке сессии:', error);
@@ -99,10 +196,14 @@ export default defineComponent({
       router.push({ name: 'create-note' });
     };
 
+    // Возвращаем все переменные и методы, которые нужны в шаблоне
     return {
       tgUsername,
+      sessionTTL,
+      formattedTime,
       goToNotes,
       createNewNote,
+      extendSession,
     };
   },
 });
