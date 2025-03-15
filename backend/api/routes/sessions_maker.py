@@ -3,8 +3,9 @@ from datetime import timedelta
 from fastapi.responses import RedirectResponse
 from fastapi import APIRouter, HTTPException
 
-from ..api_constants import VUE_BASE_URL
 from redis_config import docker_off_redis_client
+
+from ..api_constants import VUE_BASE_URL
 from ...db_config.models import User
 
 set_get_session_router = APIRouter(prefix="/set_get_session", tags=["Session settings"])

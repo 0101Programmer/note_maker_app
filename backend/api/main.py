@@ -1,14 +1,16 @@
 from dotenv import load_dotenv
-from fastapi import FastAPI
 from tortoise.contrib.fastapi import register_tortoise
 
-from backend.api.routes.notes import notes_router
-from .routes.sessions_maker import set_get_session_router
 from .api_constants import DATABASE_URL, FASTAPI_HOST, FASTAPI_PORT, VUE_BASE_URL
+
+from .routes.sessions_maker import set_get_session_router
 from .routes.users import users_router
+from .routes.notes import notes_router
+
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+
 
 # Загружаем переменные из .env файла
 load_dotenv()
