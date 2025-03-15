@@ -1,0 +1,18 @@
+# Базовый образ Python
+FROM python:3.11-slim
+
+# Установка рабочей директории
+WORKDIR /app
+
+# Копирование зависимостей (из корня проекта)
+COPY requirements.txt .
+
+# Установка зависимостей
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Копирование кода бота и файла redis_config.py из корня проекта
+COPY backend/bot/ .
+COPY redis_config.py .
+
+# Команда для запуска бота
+CMD ["python", "bot.py"]

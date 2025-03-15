@@ -9,7 +9,7 @@ from aiogram.enums import ParseMode
 from aiogram.filters import Command
 
 from redis_config import redis_client
-from .bot_constants import TELEGRAM_BOT_TOKEN, FASTAPI_HOST, FASTAPI_PORT
+from bot_constants import TELEGRAM_BOT_TOKEN, FASTAPI_HOST, FASTAPI_PORT
 
 # Настройка логирования
 logging.basicConfig(

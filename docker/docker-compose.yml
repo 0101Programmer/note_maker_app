@@ -13,3 +13,17 @@ services:
     ports:
       - "6379:6379"
     restart: always
+
+  telegram-bot:
+    build:
+      context: ../  # Контекст — это корень проекта (base_dir)
+      dockerfile: ./docker/Dockerfile.bot  # Указываем путь до Dockerfile.bot
+    environment:
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - FASTAPI_HOST=${FASTAPI_HOST}
+      - FASTAPI_PORT=${FASTAPI_PORT}
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      - redis
+    restart: always
