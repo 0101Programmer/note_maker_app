@@ -1,7 +1,7 @@
+import os
+
 from dotenv import load_dotenv
 from tortoise.contrib.fastapi import register_tortoise
-
-from .api_constants import DATABASE_URL, FASTAPI_HOST, FASTAPI_PORT, VUE_BASE_URL
 
 from .routes.sessions_maker import set_get_session_router
 from .routes.users import users_router
@@ -23,7 +23,7 @@ app.include_router(set_get_session_router)
 app.include_router(notes_router)
 # Настройка CORS
 origins = [
-    VUE_BASE_URL,  # Разрешаем запросы с фронтенда
+    os.getenv("VUE_BASE_URL"),  # Разрешаем запросы с фронтенда
 ]
 
 app.add_middleware(
@@ -37,7 +37,7 @@ app.add_middleware(
 # Регистрация Tortoise ORM
 register_tortoise(
     app,
-    db_url=DATABASE_URL,
+    db_url=os.getenv("DATABASE_URL"),
     modules={"models": ["backend.db_config.models"]},
     generate_schemas=True,
     add_exception_handlers=True,
@@ -49,4 +49,4 @@ async def read_root():
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host=FASTAPI_HOST, port=FASTAPI_PORT)
+    uvicorn.run(app, host=os.getenv("FASTAPI_HOST"), port=int(os.getenv("FASTAPI_PORT")))

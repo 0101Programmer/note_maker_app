@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import os
 import uuid
 from datetime import timedelta
 
@@ -9,7 +10,6 @@ from aiogram.enums import ParseMode
 from aiogram.filters import Command
 
 from redis_config import redis_client
-from bot_constants import TELEGRAM_BOT_TOKEN, FASTAPI_HOST, FASTAPI_PORT
 
 # Настройка логирования
 logging.basicConfig(
@@ -18,7 +18,7 @@ logging.basicConfig(
 
 # Инициализация бота и диспетчера
 bot = Bot(
-    token=TELEGRAM_BOT_TOKEN,
+    token=os.getenv("TELEGRAM_BOT_TOKEN"),
     default=DefaultBotProperties(parse_mode=ParseMode.HTML)  # Устанавливаем parse_mode
 )
 dp = Dispatcher()
@@ -35,7 +35,7 @@ async def start_command(message: types.Message):
 
 
     # Базовый URL эндпоинта API /set_get_session/
-    base_set_get_session_url = f"http://{FASTAPI_HOST}:{FASTAPI_PORT}/set_get_session/"
+    base_set_get_session_url = f"http://{os.getenv('FASTAPI_HOST')}:{os.getenv('FASTAPI_PORT')}/set_get_session/"
     session_maker_id = str(uuid.uuid4())
     # Сохраняем пару К/З в Redis
     redis_client.setex(

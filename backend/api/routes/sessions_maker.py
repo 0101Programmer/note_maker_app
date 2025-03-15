@@ -1,3 +1,4 @@
+import os
 import uuid
 from datetime import timedelta
 from fastapi.responses import RedirectResponse
@@ -5,7 +6,6 @@ from fastapi import APIRouter, HTTPException
 
 from redis_config import docker_off_redis_client
 
-from ..api_constants import VUE_BASE_URL
 from ...db_config.models import User
 
 set_get_session_router = APIRouter(prefix="/set_get_session", tags=["Session settings"])
@@ -37,7 +37,7 @@ async def set_get_session(session_maker_id: str, tg_username: str):
         await User.create(username=tg_username)
 
     # Формируем URL для редиректа
-    redirect_url = f"{VUE_BASE_URL}/{session_id}/{tg_username}"
+    redirect_url = f"{os.getenv("VUE_BASE_URL")}/{session_id}/{tg_username}"
 
     # Выполняем редирект
     return RedirectResponse(url=redirect_url)
