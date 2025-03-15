@@ -1,0 +1,19 @@
+# Базовый образ Python
+FROM python:3.11-slim
+
+# Установка рабочей директории
+WORKDIR /app
+
+# Копирование зависимостей (из корня проекта)
+COPY requirements.txt .
+
+# Установка зависимостей
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Копирование кода FastAPI и других файлов
+COPY backend/api/ ./backend/api/
+COPY backend/db_config/ ./backend/db_config/
+COPY redis_config.py .
+
+# Команда для запуска FastAPI
+CMD ["uvicorn", "backend.api.main:app", "--host", "0.0.0.0", "--port", "8000"]

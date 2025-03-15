@@ -62,6 +62,7 @@ export default defineComponent({
         } else {
           // Если сессия недействительна, перенаправляем на страницу ошибки
           await router.push({name: 'access-denied'});
+          console.log("message", response.data.message);
         }
       } catch (error) {
         console.error("Ошибка при проверке сессии:", error);

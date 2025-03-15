@@ -46,7 +46,3 @@ register_tortoise(
 @app.get("/")
 async def read_root():
     return {"message": "Welcome to the API!"}
-
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host=os.getenv("FASTAPI_HOST"), port=int(os.getenv("FASTAPI_PORT")))

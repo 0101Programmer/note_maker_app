@@ -24,6 +24,22 @@ services:
       - FASTAPI_PORT=${FASTAPI_PORT}
       - REDIS_HOST=${REDIS_HOST}
       - REDIS_PORT=${REDIS_PORT}
+      - VUE_BASE_URL=${VUE_BASE_URL}
     depends_on:
       - redis
+    restart: always
+
+  fastapi:
+    build:
+      context: ../  # Контекст — это корень проекта (base_dir)
+      dockerfile: ./docker/Dockerfile.api  # Указываем путь до Dockerfile.fastapi
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - REDIS_HOST=${REDIS_HOST}
+      - REDIS_PORT=${REDIS_PORT}
+      - VUE_BASE_URL=${VUE_BASE_URL}
+    ports:
+      - "127.0.0.1:8000:8000"  # Проброс порта только на localhost хоста
+    depends_on:
+      - redis        # FastAPI зависит от Redis
     restart: always
