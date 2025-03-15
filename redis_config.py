@@ -8,7 +8,7 @@ redis_client = redis.StrictRedis(
     decode_responses=True  # Автоматически декодировать ответы в строки
 )
 
-# Аршинное подключение к Redis для FastAPI
+# Временное подключение к Redis для FastAPI
 docker_off_redis_client = redis.StrictRedis(
     host='localhost',  # Адрес сервера Redis
     port=6379,         # Порт Redis (по умолчанию 6379)
