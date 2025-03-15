@@ -51,8 +51,24 @@ export default defineComponent({
     // Функция для проверки сессии
     const checkSession = async () => {
       try {
-        // Отправляем запрос на проверку сессии
-        const response = await axios.get(`http://localhost:8000/set_get_session/check_session/${sessionID}/${tgUsername}`);
+
+        // Используем переменные окружения из .env
+        const fastApiHost = import.meta.env.VITE_FASTAPI_HOST;
+        const fastApiPort = import.meta.env.VITE_FASTAPI_PORT;
+
+        // Отправляем POST-запрос с данными в формате JSON
+        const response = await axios.post(
+          `http://${fastApiHost}:${fastApiPort}/set_get_session/check_session`,
+          {
+            session_id: sessionID,
+            tg_username: tgUsername,
+          },
+          {
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          }
+        );
 
         // Проверяем результат
         if (response.data.valid) {
@@ -61,12 +77,12 @@ export default defineComponent({
           userStore.setSessionID(sessionID);
         } else {
           // Если сессия недействительна, перенаправляем на страницу ошибки
-          await router.push({name: 'access-denied'});
-          console.log("message", response.data.message);
+          await router.push({ name: 'access-denied' });
+          console.log('message', response.data.message);
         }
       } catch (error) {
-        console.error("Ошибка при проверке сессии:", error);
-        await router.push({name: 'iternal-error'});
+        console.error('Ошибка при проверке сессии:', error);
+        await router.push({ name: 'iternal-error' });
       }
     };
 

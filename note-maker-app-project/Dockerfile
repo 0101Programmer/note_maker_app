@@ -4,14 +4,17 @@ FROM node:18-alpine AS builder
 # Устанавливаем рабочую директорию
 WORKDIR /app
 
+# Копируем .env файл
+COPY ./.env ./.env
+
 # Копируем package.json и package-lock.json
-COPY package*.json ./
+COPY ./note-maker-app-project/package*.json ./
 
 # Устанавливаем зависимости
 RUN npm install
 
 # Копируем остальные файлы проекта
-COPY . .
+COPY ./note-maker-app-project .
 
 # Собираем проект
 RUN npm run build
@@ -23,7 +26,7 @@ FROM nginx:alpine
 COPY --from=builder /app/dist /usr/share/nginx/html
 
 # Копируем конфигурацию Nginx
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY ./note-maker-app-project/nginx.conf /etc/nginx/conf.d/default.conf
 
 # Экспонируем порт 80
 EXPOSE 80
