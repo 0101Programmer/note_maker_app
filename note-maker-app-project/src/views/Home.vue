@@ -13,11 +13,18 @@
         После завершения сессии вам потребуется перезайти в приложение.
       </p>
 
-      <!-- Кнопка "Продлить сессию" -->
+      <!-- Выпадающий список для выбора времени -->
       <div class="mt-4">
+        <select v-model="selectedDuration" class="px-4 py-2 border rounded-md text-gray-700">
+          <option value="60">1 минута</option>
+          <option value="1800">30 минут</option>
+          <option value="3600">1 час</option>
+        </select>
+
+        <!-- Кнопка "Продлить сессию" -->
         <button
-          @click="extendSession"
-          class="px-4 py-2 bg-gradient-to-r from-purple-500 to-indigo-600 text-white font-bold rounded-full shadow-lg hover:scale-105 transition-transform duration-200"
+          @click="extendSession(selectedDuration)"
+          class="ml-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-indigo-600 text-white font-bold rounded-full shadow-lg hover:scale-105 transition-transform duration-200"
         >
           Продлить сессию
         </button>
@@ -140,10 +147,29 @@ export default defineComponent({
       startTTLUpdate();
     });
 
-    // Заглушка для продления сессии
-    const extendSession = () => {
-      alert('Функция продления сессии пока недоступна. Выберите время продления.');
-      console.log('Продление сессии запрошено');
+    // Состояние для хранения выбранного времени продления
+    const selectedDuration = ref<number>(60); // По умолчанию 1 минута
+
+    // Функция для продления сессии
+    const extendSession = async (duration: number) => {
+      try {
+        const fastApiHost = import.meta.env.VITE_FASTAPI_HOST;
+        const fastApiPort = import.meta.env.VITE_FASTAPI_PORT;
+
+        const response = await axios.post(
+          `http://${fastApiHost}:${fastApiPort}/set_get_session/update_session_timer`,
+          { tg_username: tgUsername, duration },
+          { headers: { 'Content-Type': 'application/json' } }
+        );
+
+        console.log('Сессия продлена:', response.data);
+
+        // Обновляем TTL после продления
+        await fetchSessionTTL();
+      } catch (error) {
+        console.error('Ошибка при продлении сессии:', error);
+        alert('Не удалось продлить сессию. Попробуйте снова.');
+      }
     };
 
     // Функция для проверки ID сессии
@@ -204,6 +230,7 @@ export default defineComponent({
       goToNotes,
       createNewNote,
       extendSession,
+      selectedDuration,
     };
   },
 });

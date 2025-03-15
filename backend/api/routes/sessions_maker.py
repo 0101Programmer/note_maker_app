@@ -94,3 +94,29 @@ async def check_session_timer(request: Request):
     # Возвращаем TTL в секундах
     return JSONResponse(content={"ttl": ttl}, status_code=200)
 
+@set_get_session_router.post("/update_session_timer")
+async def update_session_timer(request: Request):
+    try:
+        # Получаем данные из тела запроса
+        data = await request.json()
+        tg_username = data.get("tg_username")
+        duration = data.get("duration")  # Время продления в секундах
+
+        if not tg_username or not duration:
+            raise HTTPException(status_code=400, detail="Missing tg_username or duration in request")
+
+        # Проверяем, существует ли ключ в Redis
+        if not redis_client.exists(tg_username):
+            return JSONResponse(content={"error": "Session does not exist"}, status_code=404)
+
+        # Обновляем TTL для ключа
+        redis_client.expire(tg_username, time=duration)
+
+        # Возвращаем успешный ответ
+        return JSONResponse(content={"message": "Session extended successfully", "new_ttl": duration}, status_code=200)
+
+    except Exception as e:
+        # Логируем ошибку и возвращаем сообщение об ошибке
+        print(f"Error updating session timer: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
