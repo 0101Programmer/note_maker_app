@@ -6,6 +6,7 @@ export const useUserStore = defineStore('user', {
     tgUsername: '', // Имя пользователя из Telegram
     sessionID: '', // ID сессии
     notes: [] as any[], // Список заметок пользователя
+    isLoading: false, // Флаг загрузки
   }),
   actions: {
     setTgUsername(username: string) {
@@ -19,7 +20,6 @@ export const useUserStore = defineStore('user', {
         const fastApiHost = import.meta.env.VITE_FASTAPI_HOST;
         const fastApiPort = import.meta.env.VITE_FASTAPI_PORT;
 
-        // Отправляем POST-запрос для проверки сессии
         const response = await axios.post(
           `http://${fastApiHost}:${fastApiPort}/set_get_session/check_session`,
           {
@@ -27,15 +27,11 @@ export const useUserStore = defineStore('user', {
             tg_username: this.tgUsername,
           },
           {
-            headers: {
-              'Content-Type': 'application/json',
-            },
+            headers: { 'Content-Type': 'application/json' },
           }
         );
 
-        // Проверяем результат
         if (!response.data.valid) {
-          // Если сессия недействительна, перенаправляем на страницу ошибки
           await router.push({ name: 'access-denied' });
         }
       } catch (error) {
@@ -43,23 +39,26 @@ export const useUserStore = defineStore('user', {
         await router.push({ name: 'iternal-error' });
       }
     },
-    async fetchNotes() {
+    async fetchNotes(): Promise<void> {
+      if (this.isLoading) return; // Предотвращаем повторные запросы
+
+      this.isLoading = true; // Устанавливаем флаг загрузки
       try {
         const fastApiHost = import.meta.env.VITE_FASTAPI_HOST;
         const fastApiPort = import.meta.env.VITE_FASTAPI_PORT;
 
-        // Отправляем POST-запрос для получения заметок
         const response = await axios.post(
-          `http://${fastApiHost}:${fastApiPort}/notes/get_all_notes/`,
+          `http://${fastApiHost}:${fastApiPort}/notes/get_all_notes/`, // Исправленный путь
           { username: this.tgUsername },
           { headers: { 'Content-Type': 'application/json' } }
         );
 
-        // Сохраняем заметки в состоянии
-        this.notes = response.data;
+        this.notes = response.data; // Сохраняем заметки
       } catch (error) {
         console.error('Ошибка при получении заметок:', error);
         alert('Не удалось загрузить заметки. Попробуйте снова.');
+      } finally {
+        this.isLoading = false; // Сбрасываем флаг загрузки
       }
     },
   },

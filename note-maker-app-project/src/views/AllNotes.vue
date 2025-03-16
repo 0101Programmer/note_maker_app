@@ -3,8 +3,13 @@
     <!-- Заголовок -->
     <h1 class="text-3xl font-bold mb-8 text-center">Ваши заметки</h1>
 
+    <!-- Индикатор загрузки -->
+    <div v-if="isLoading" class="text-center text-gray-400">
+      <p class="text-lg font-semibold">Загрузка заметок...</p>
+    </div>
+
     <!-- Список заметок -->
-    <div v-if="notes.length > 0" class="space-y-4">
+    <div v-else-if="notes.length > 0" class="space-y-4">
       <div
         v-for="note in notes"
         :key="note.id"
@@ -36,7 +41,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, onMounted } from 'vue';
+import { defineComponent, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useUserStore } from '@/stores/userStore';
 
@@ -51,6 +56,12 @@ export default defineComponent({
       return date.toLocaleString(); // Форматируем дату в удобочитаемый вид
     };
 
+    // Реактивное получение заметок
+    const notes = computed(() => userStore.notes);
+
+    // Реактивный флаг загрузки
+    const isLoading = computed(() => userStore.isLoading);
+
     // Возвращение на главную страницу
     const goBack = () => {
       const { sessionID, tgUsername } = userStore;
@@ -62,12 +73,17 @@ export default defineComponent({
     };
 
     // Получаем заметки при загрузке компонента
-    onMounted(() => {
-      userStore.fetchNotes();
+    onMounted(async () => {
+      try {
+        await userStore.fetchNotes(); // Ждем завершения загрузки
+      } catch (error) {
+        console.error('Ошибка при загрузке заметок:', error);
+      }
     });
 
     return {
-      notes: userStore.notes, // Достаем заметки из стора
+      notes, // Реактивные заметки
+      isLoading, // Реактивный флаг загрузки
       formatDate,
       goBack,
     };
