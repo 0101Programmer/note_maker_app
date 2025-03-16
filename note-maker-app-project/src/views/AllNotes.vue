@@ -13,7 +13,7 @@
       <div
         v-for="note in notes"
         :key="note.id"
-        class="p-6 bg-white/10 backdrop-blur-lg rounded-2xl shadow-lg transition-transform duration-200 hover:scale-105 relative group"
+        class="p-6 bg-white/10 backdrop-blur-lg rounded-2xl shadow-lg transition-transform duration-200 hover:scale-105 relative group transform-gpu backface-hidden"
       >
         <!-- Кнопка удаления -->
         <button
@@ -80,35 +80,38 @@
           </svg>
         </button>
 
-        <!-- Заголовок -->
-        <input
-          v-if="note.isEditing"
-          v-model="note.title"
-          class="mt-8 text-xl font-bold text-white bg-transparent outline-none w-full"
-        />
-        <h2
-          v-else
-          class="text-xl font-bold text-white"
-          :class="{ 'mt-8': note.isEditing }"
-        >
-          {{ note.title }}
-        </h2>
+        <!-- Содержимое заметки -->
+        <div class="flex flex-col items-center">
+          <!-- Заголовок -->
+          <input
+            v-if="note.isEditing"
+            v-model="note.title"
+            class="mt-8 text-xl font-bold text-white bg-transparent outline-none w-full text-center"
+          />
+          <h2
+            v-else
+            class="text-xl font-bold text-white text-center"
+            :class="{ 'mt-8': note.isEditing }"
+          >
+            {{ note.title }}
+          </h2>
 
-        <!-- Содержание -->
-        <textarea
-          v-if="note.isEditing"
-          v-model="note.content"
-          class="mt-2 text-gray-300 bg-transparent outline-none w-full resize-none"
-        ></textarea>
-        <p
-          v-else
-          class="mt-2 text-gray-300"
-          :class="{ 'mt-8': note.isEditing }"
-        >
-          {{ note.content }}
-        </p>
+          <!-- Содержание -->
+          <textarea
+            v-if="note.isEditing"
+            v-model="note.content"
+            class="mt-2 text-gray-300 bg-transparent outline-none w-full resize-none text-center"
+          ></textarea>
+          <p
+            v-else
+            class="mt-2 text-gray-300 text-center"
+            :class="{ 'mt-8': note.isEditing }"
+          >
+            {{ note.content }}
+          </p>
+        </div>
 
-        <div class="mt-4 text-sm text-gray-400">
+        <div class="mt-4 text-sm text-gray-400 text-center">
           Создано: {{ formatDate(note.created_at) }}<br />
           Обновлено: {{ formatDate(note.updated_at) }}
         </div>
