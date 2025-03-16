@@ -38,8 +38,8 @@
 
         <!-- Кнопка редактирования -->
         <button
-          v-if="!note.isEditing"
-          @click="startEditing(note)"
+          v-if="!editingState[note.id]"
+          @click="startEditing(note.id)"
           class="absolute top-3 left-3 p-2 text-gray-300 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-full hover:bg-white/20 hover:text-white"
         >
           <svg
@@ -84,28 +84,28 @@
         <div class="flex flex-col items-center">
           <!-- Заголовок -->
           <input
-            v-if="note.isEditing"
+            v-if="editingState[note.id]"
             v-model="note.title"
             class="mt-8 text-xl font-bold text-white bg-transparent outline-none w-full text-center"
           />
           <h2
             v-else
             class="text-xl font-bold text-white text-center"
-            :class="{ 'mt-8': note.isEditing }"
+            :class="{ 'mt-8': editingState[note.id] }"
           >
             {{ note.title }}
           </h2>
 
           <!-- Содержание -->
           <textarea
-            v-if="note.isEditing"
+            v-if="editingState[note.id]"
             v-model="note.content"
             class="mt-2 text-gray-300 bg-transparent outline-none w-full resize-none text-center"
           ></textarea>
           <p
             v-else
             class="mt-2 text-gray-300 text-center"
-            :class="{ 'mt-8': note.isEditing }"
+            :class="{ 'mt-8': editingState[note.id] }"
           >
             {{ note.content }}
           </p>
@@ -135,9 +135,14 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, onMounted, computed } from 'vue';
+import { defineComponent, onMounted, computed, reactive } from 'vue';
 import { useRouter } from 'vue-router';
 import { useUserStore } from '@/stores/userStore';
+
+// Определяем тип для состояния редактирования
+type EditingState = {
+  [key: number]: boolean; // Ключи — числовые ID заметок, значения — булевы
+};
 
 export default defineComponent({
   setup() {
@@ -155,6 +160,16 @@ export default defineComponent({
 
     // Реактивный флаг загрузки
     const isLoading = computed(() => userStore.isLoading);
+
+    // Создаем реактивное состояние для isEditing с явным типом
+    const editingState = reactive<EditingState>({});
+
+    // Инициализация состояния редактирования для заметок
+    const initializeEditingState = () => {
+      notes.value.forEach((note) => {
+        editingState[note.id] = false; // Начальное состояние: false
+      });
+    };
 
     // Возвращение на главную страницу
     const goBack = () => {
@@ -174,14 +189,15 @@ export default defineComponent({
     };
 
     // Редактирование заметки
-    const startEditing = (note: any) => {
-      note.isEditing = true; // Добавляем флаг редактирования
+    const startEditing = (noteId: number) => {
+      editingState[noteId] = true; // Включаем режим редактирования
     };
 
+    // Сохранение заметки
     const saveNote = async (note: any) => {
       try {
         await userStore.updateNote(note.id, note.title, note.content);
-        note.isEditing = false; // Отключаем режим редактирования
+        editingState[note.id] = false; // Отключаем режим редактирования
       } catch (error) {
         console.error('Ошибка при сохранении заметки:', error);
         alert('Не удалось сохранить изменения. Попробуйте снова.');
@@ -192,6 +208,7 @@ export default defineComponent({
     onMounted(async () => {
       try {
         await userStore.fetchNotes(); // Ждем завершения загрузки
+        initializeEditingState(); // Инициализируем состояние редактирования
       } catch (error) {
         console.error('Ошибка при загрузке заметок:', error);
       }
@@ -200,6 +217,7 @@ export default defineComponent({
     return {
       notes, // Реактивные заметки
       isLoading, // Реактивный флаг загрузки
+      editingState, // Реактивное состояние редактирования
       formatDate,
       goBack,
       deleteNote,
