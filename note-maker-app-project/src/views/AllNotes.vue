@@ -63,6 +63,7 @@
           v-else
           @click="saveNote(note)"
           class="absolute top-3 left-3 p-2 text-green-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-full hover:bg-green-400/20 hover:text-white"
+          :disabled="isSaveDisabled(note)"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -83,29 +84,41 @@
         <!-- Содержимое заметки -->
         <div class="flex flex-col items-center">
           <!-- Заголовок -->
-          <input
-            v-if="editingState[note.id]"
-            v-model="note.title"
-            class="mt-8 text-xl font-bold text-white bg-transparent outline-none w-full text-center"
-          />
+          <div v-if="editingState[note.id]" class="w-full">
+            <input
+              v-model="note.title"
+              class="mt-8 text-xl font-bold text-white bg-transparent outline-none w-full text-center"
+            />
+            <p
+              v-if="!note.title"
+              class="text-red-500 text-sm mt-1"
+            >
+              Заголовок не может быть пустым
+            </p>
+          </div>
           <h2
             v-else
-            class="text-xl font-bold text-white text-center"
-            :class="{ 'mt-8': editingState[note.id] }"
+            class="text-xl font-bold text-white text-center mt-8"
           >
             {{ note.title }}
           </h2>
 
           <!-- Содержание -->
-          <textarea
-            v-if="editingState[note.id]"
-            v-model="note.content"
-            class="mt-2 text-gray-300 bg-transparent outline-none w-full resize-none text-center"
-          ></textarea>
+          <div v-if="editingState[note.id]" class="w-full">
+            <textarea
+              v-model="note.content"
+              class="mt-2 text-gray-300 bg-transparent outline-none w-full resize-none text-center"
+            ></textarea>
+            <p
+              v-if="!note.content"
+              class="text-red-500 text-sm mt-1"
+            >
+              Содержание не может быть пустым
+            </p>
+          </div>
           <p
             v-else
             class="mt-2 text-gray-300 text-center"
-            :class="{ 'mt-8': editingState[note.id] }"
           >
             {{ note.content }}
           </p>
@@ -190,11 +203,22 @@ export default defineComponent({
 
     // Редактирование заметки
     const startEditing = (noteId: number) => {
-      editingState[noteId] = true; // Включаем режим редактирования
+      // Убедимся, что состояние редактирования обновляется корректно
+      editingState[noteId] = true;
+    };
+
+    // Проверка, можно ли сохранить заметку
+    const isSaveDisabled = (note: any): boolean => {
+      return !note.title || !note.content;
     };
 
     // Сохранение заметки
     const saveNote = async (note: any) => {
+      if (isSaveDisabled(note)) {
+        alert('Заголовок и содержание не могут быть пустыми.');
+        return;
+      }
+
       try {
         await userStore.updateNote(note.id, note.title, note.content);
         editingState[note.id] = false; // Отключаем режим редактирования
@@ -223,6 +247,7 @@ export default defineComponent({
       deleteNote,
       startEditing,
       saveNote,
+      isSaveDisabled,
     };
   },
 });
