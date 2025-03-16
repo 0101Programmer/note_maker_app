@@ -86,7 +86,7 @@ export default defineComponent({
       ? route.params.session_id[0]
       : route.params.session_id;
 
-    // --- Проверка времени сессии ---
+    // --- Управление временем сессии ---
 
     // Состояние для хранения TTL сессии
     const sessionTTL = ref<number | null>(null);
@@ -216,6 +216,8 @@ export default defineComponent({
     // Вызываем проверку ID сессии при загрузке страницы
     checkSession();
 
+    // --- Обработчики перехода на другие страницы ---
+
     // Переход к списку заметок
     const goToNotes = () => {
       router.push({ name: 'all-notes' });
@@ -226,7 +228,7 @@ export default defineComponent({
       router.push({ name: 'create-note' });
     };
 
-    // Возвращаем все переменные и методы, которые нужны в шаблоне
+    // --- Возвращаем все переменные и методы, которые нужны в шаблоне ---
     return {
       tgUsername,
       sessionTTL,
