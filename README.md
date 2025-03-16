@@ -2,7 +2,7 @@
 
 # Стек технологий:
 + ### Backend: Python 3.13, Tortoise ORM, FastAPI, Aiogram, PostgreSQL, Docker, Redis
-+ ### Frontend: Vue 3, Pinia, TypeScript, TailwindCSS
++ ### Frontend: Vue 3, Vite, Pinia, TypeScript, TailwindCSS
 
 # Функционал:
 
