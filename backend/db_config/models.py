@@ -31,3 +31,7 @@ class NoteResponse(BaseModel):
     content: str
     created_at: str
     updated_at: str
+
+# Модель данных для удаления заметки
+class DeleteNoteRequest(BaseModel):
+    note_id: int

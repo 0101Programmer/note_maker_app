@@ -13,8 +13,29 @@
       <div
         v-for="note in notes"
         :key="note.id"
-        class="p-6 bg-white/10 backdrop-blur-lg rounded-2xl shadow-lg transition-transform duration-200 hover:scale-105"
+        class="p-6 bg-white/10 backdrop-blur-lg rounded-2xl shadow-lg transition-transform duration-200 hover:scale-105 relative group"
       >
+        <!-- Кнопка удаления -->
+        <button
+          @click="deleteNote(note.id)"
+          class="absolute top-3 right-3 p-1.5 bg-gradient-to-br from-[#6a11cb]/20 to-[#2575fc]/20 rounded-full text-gray-300 opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:text-white hover:from-[#6a11cb]/50 hover:to-[#2575fc]/50"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-5 w-5"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M6 18L18 6M6 6l12 12"
+            />
+          </svg>
+        </button>
+
         <h2 class="text-xl font-bold text-white">{{ note.title }}</h2>
         <p class="mt-2 text-gray-300">{{ note.content }}</p>
         <div class="mt-4 text-sm text-gray-400">
@@ -72,6 +93,13 @@ export default defineComponent({
       }
     };
 
+    // Удаление заметки
+    const deleteNote = async (noteId: number) => {
+      if (confirm('Вы уверены, что хотите удалить эту заметку?')) {
+        await userStore.deleteNote(noteId);
+      }
+    };
+
     // Получаем заметки при загрузке компонента
     onMounted(async () => {
       try {
@@ -86,6 +114,7 @@ export default defineComponent({
       isLoading, // Реактивный флаг загрузки
       formatDate,
       goBack,
+      deleteNote,
     };
   },
 });

@@ -40,25 +40,43 @@ export const useUserStore = defineStore('user', {
       }
     },
     async fetchNotes(): Promise<void> {
-      if (this.isLoading) return; // Предотвращаем повторные запросы
+      if (this.isLoading) return;
 
-      this.isLoading = true; // Устанавливаем флаг загрузки
+      this.isLoading = true;
       try {
         const fastApiHost = import.meta.env.VITE_FASTAPI_HOST;
         const fastApiPort = import.meta.env.VITE_FASTAPI_PORT;
 
         const response = await axios.post(
-          `http://${fastApiHost}:${fastApiPort}/notes/get_all_notes/`, // Исправленный путь
+          `http://${fastApiHost}:${fastApiPort}/notes/get_all_notes/`,
           { username: this.tgUsername },
           { headers: { 'Content-Type': 'application/json' } }
         );
 
-        this.notes = response.data; // Сохраняем заметки
+        this.notes = response.data;
       } catch (error) {
         console.error('Ошибка при получении заметок:', error);
         alert('Не удалось загрузить заметки. Попробуйте снова.');
       } finally {
-        this.isLoading = false; // Сбрасываем флаг загрузки
+        this.isLoading = false;
+      }
+    },
+    async deleteNote(noteId: number): Promise<void> {
+      try {
+        const fastApiHost = import.meta.env.VITE_FASTAPI_HOST;
+        const fastApiPort = import.meta.env.VITE_FASTAPI_PORT;
+
+        await axios.post(
+          `http://${fastApiHost}:${fastApiPort}/notes/delete_note/`,
+          { note_id: noteId }, // Отправляем данные в формате JSON
+          { headers: { 'Content-Type': 'application/json' } }
+        );
+
+        // Удаляем заметку из состояния
+        this.notes = this.notes.filter((note) => note.id !== noteId);
+      } catch (error) {
+        console.error('Ошибка при удалении заметки:', error);
+        alert('Не удалось удалить заметку. Попробуйте снова.');
       }
     },
   },
