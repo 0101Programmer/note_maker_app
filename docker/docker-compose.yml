@@ -14,6 +14,7 @@ services:
     container_name: my-redis
     ports:
       - "6379:6379"
+    entrypoint: ["sh", "-c", "redis-server --appendonly yes && redis-cli FLUSHALL"]
     restart: always
 
   telegram-bot:
