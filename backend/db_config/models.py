@@ -19,3 +19,15 @@ class Note(Model):
 class NoteCreate(BaseModel):
     title: str
     content: str
+
+# Модель данных для входного JSON с телеграм юзернеймом
+class UsernameInput(BaseModel):
+    username: str
+
+# Модель данных для выходного JSON (по модели заметки)
+class NoteResponse(BaseModel):
+    id: int
+    title: str
+    content: str
+    created_at: str
+    updated_at: str

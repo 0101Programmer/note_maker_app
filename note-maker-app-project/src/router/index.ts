@@ -41,6 +41,11 @@ const router = createRouter({
       component: () => import('@/views/IternalError.vue'),
     },
     {
+      path: '/all-notes',
+      name: 'all-notes',
+      component: () => import('@/views/AllNotes.vue'),
+    },
+    {
       path: '/error', // Страница ошибки
       name: 'error',
       component: ErrorPage,
