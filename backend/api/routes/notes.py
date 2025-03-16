@@ -2,7 +2,8 @@ from fastapi import APIRouter, HTTPException
 from tortoise.exceptions import DoesNotExist
 from typing import List
 
-from ...db_config.models import Note, NoteCreate, User, NoteResponse, UsernameInput, DeleteNoteRequest
+from ...db_config.models import Note, NoteCreate, User, NoteResponse, UsernameInput, DeleteNoteRequest, \
+    UpdateNoteRequest
 
 notes_router = APIRouter(prefix="/notes", tags=["Notes"])
 
@@ -61,3 +62,27 @@ async def delete_note(request_data: DeleteNoteRequest):
         return {"message": "Заметка успешно удалена"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Ошибка при удалении заметки: {str(e)}")
+
+@notes_router.post("/update_note/")
+async def update_note(request_data: UpdateNoteRequest):
+    try:
+        # Проверяем, существует ли заметка с указанным ID
+        note = await Note.get_or_none(id=request_data.note_id)
+        if not note:
+            raise HTTPException(status_code=404, detail="Заметка не найдена")
+
+        # Обновляем заголовок и содержание заметки
+        note.title = request_data.title
+        note.content = request_data.content
+        await note.save()
+
+        # Возвращаем обновленную заметку
+        return {
+            "id": note.id,
+            "title": note.title,
+            "content": note.content,
+            "created_at": note.created_at.isoformat(),
+            "updated_at": note.updated_at.isoformat(),
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Ошибка при обновлении заметки: {str(e)}")

@@ -61,6 +61,28 @@ export const useUserStore = defineStore('user', {
         this.isLoading = false;
       }
     },
+    async updateNote(noteId: number, title: string, content: string): Promise<void> {
+      try {
+        const fastApiHost = import.meta.env.VITE_FASTAPI_HOST;
+        const fastApiPort = import.meta.env.VITE_FASTAPI_PORT;
+
+        // Отправляем запрос на сервер для обновления заметки
+        const response = await axios.post(
+          `http://${fastApiHost}:${fastApiPort}/notes/update_note/`,
+          { note_id: noteId, title, content },
+          { headers: { 'Content-Type': 'application/json' } }
+        );
+
+        // Обновляем заметку в состоянии данными из ответа сервера
+        const updatedNoteIndex = this.notes.findIndex((note) => note.id === noteId);
+        if (updatedNoteIndex !== -1) {
+          this.notes[updatedNoteIndex] = { ...this.notes[updatedNoteIndex], ...response.data };
+        }
+      } catch (error) {
+        console.error('Ошибка при обновлении заметки:', error);
+        alert('Не удалось обновить заметку. Попробуйте снова.');
+      }
+    },
     async deleteNote(noteId: number): Promise<void> {
       try {
         const fastApiHost = import.meta.env.VITE_FASTAPI_HOST;

@@ -18,7 +18,7 @@
         <!-- Кнопка удаления -->
         <button
           @click="deleteNote(note.id)"
-          class="absolute top-3 right-3 p-1.5 bg-gradient-to-br from-[#6a11cb]/20 to-[#2575fc]/20 rounded-full text-gray-300 opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:text-white hover:from-[#6a11cb]/50 hover:to-[#2575fc]/50"
+          class="absolute top-3 right-3 p-2 text-gray-300 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-full hover:bg-white/20 hover:text-white"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -36,8 +36,78 @@
           </svg>
         </button>
 
-        <h2 class="text-xl font-bold text-white">{{ note.title }}</h2>
-        <p class="mt-2 text-gray-300">{{ note.content }}</p>
+        <!-- Кнопка редактирования -->
+        <button
+          v-if="!note.isEditing"
+          @click="startEditing(note)"
+          class="absolute top-3 left-3 p-2 text-gray-300 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-full hover:bg-white/20 hover:text-white"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-5 w-5"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+            />
+          </svg>
+        </button>
+
+        <!-- Кнопка сохранения -->
+        <button
+          v-else
+          @click="saveNote(note)"
+          class="absolute top-3 left-3 p-2 text-green-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-full hover:bg-green-400/20 hover:text-white"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-5 w-5"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M5 13l4 4L19 7"
+            />
+          </svg>
+        </button>
+
+        <!-- Заголовок -->
+        <input
+          v-if="note.isEditing"
+          v-model="note.title"
+          class="mt-8 text-xl font-bold text-white bg-transparent outline-none w-full"
+        />
+        <h2
+          v-else
+          class="text-xl font-bold text-white"
+          :class="{ 'mt-8': note.isEditing }"
+        >
+          {{ note.title }}
+        </h2>
+
+        <!-- Содержание -->
+        <textarea
+          v-if="note.isEditing"
+          v-model="note.content"
+          class="mt-2 text-gray-300 bg-transparent outline-none w-full resize-none"
+        ></textarea>
+        <p
+          v-else
+          class="mt-2 text-gray-300"
+          :class="{ 'mt-8': note.isEditing }"
+        >
+          {{ note.content }}
+        </p>
+
         <div class="mt-4 text-sm text-gray-400">
           Создано: {{ formatDate(note.created_at) }}<br />
           Обновлено: {{ formatDate(note.updated_at) }}
@@ -100,6 +170,21 @@ export default defineComponent({
       }
     };
 
+    // Редактирование заметки
+    const startEditing = (note: any) => {
+      note.isEditing = true; // Добавляем флаг редактирования
+    };
+
+    const saveNote = async (note: any) => {
+      try {
+        await userStore.updateNote(note.id, note.title, note.content);
+        note.isEditing = false; // Отключаем режим редактирования
+      } catch (error) {
+        console.error('Ошибка при сохранении заметки:', error);
+        alert('Не удалось сохранить изменения. Попробуйте снова.');
+      }
+    };
+
     // Получаем заметки при загрузке компонента
     onMounted(async () => {
       try {
@@ -115,6 +200,8 @@ export default defineComponent({
       formatDate,
       goBack,
       deleteNote,
+      startEditing,
+      saveNote,
     };
   },
 });
