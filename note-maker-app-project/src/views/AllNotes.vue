@@ -152,9 +152,8 @@ import { defineComponent, onMounted, computed, reactive } from 'vue';
 import { useRouter } from 'vue-router';
 import { useUserStore } from '@/stores/userStore';
 
-// Определяем тип для состояния редактирования
 type EditingState = {
-  [key: number]: boolean; // Ключи — числовые ID заметок, значения — булевы
+  [key: number]: boolean;
 };
 
 export default defineComponent({
@@ -162,29 +161,22 @@ export default defineComponent({
     const router = useRouter();
     const userStore = useUserStore();
 
-    // Форматирование даты
     const formatDate = (dateString: string) => {
       const date = new Date(dateString);
-      return date.toLocaleString(); // Форматируем дату в удобочитаемый вид
+      return date.toLocaleString();
     };
 
-    // Реактивное получение заметок
     const notes = computed(() => userStore.notes);
-
-    // Реактивный флаг загрузки
     const isLoading = computed(() => userStore.isLoading);
-
-    // Создаем реактивное состояние для isEditing с явным типом
     const editingState = reactive<EditingState>({});
+    const originalValues = reactive<{ [key: number]: { title: string; content: string } }>({});
 
-    // Инициализация состояния редактирования для заметок
     const initializeEditingState = () => {
       notes.value.forEach((note) => {
-        editingState[note.id] = false; // Начальное состояние: false
+        editingState[note.id] = false;
       });
     };
 
-    // Возвращение на главную страницу
     const goBack = () => {
       const { sessionID, tgUsername } = userStore;
       if (sessionID && tgUsername) {
@@ -194,54 +186,58 @@ export default defineComponent({
       }
     };
 
-    // Удаление заметки
     const deleteNote = async (noteId: number) => {
       if (confirm('Вы уверены, что хотите удалить эту заметку?')) {
         await userStore.deleteNote(noteId);
       }
     };
 
-    // Редактирование заметки
     const startEditing = (noteId: number) => {
-      // Убедимся, что состояние редактирования обновляется корректно
-      editingState[noteId] = true;
+      const note = notes.value.find(n => n.id === noteId);
+      if (note) {
+        originalValues[noteId] = { title: note.title, content: note.content };
+        editingState[noteId] = true;
+      }
     };
 
-    // Проверка, можно ли сохранить заметку
     const isSaveDisabled = (note: any): boolean => {
       return !note.title || !note.content;
     };
 
-    // Сохранение заметки
     const saveNote = async (note: any) => {
       if (isSaveDisabled(note)) {
         alert('Заголовок и содержание не могут быть пустыми.');
         return;
       }
 
+      if (originalValues[note.id] && originalValues[note.id].title === note.title && originalValues[note.id].content === note.content) {
+        editingState[note.id] = false;
+        return;
+      }
+
       try {
         await userStore.updateNote(note.id, note.title, note.content);
-        editingState[note.id] = false; // Отключаем режим редактирования
+        editingState[note.id] = false;
+        delete originalValues[note.id];
       } catch (error) {
         console.error('Ошибка при сохранении заметки:', error);
         alert('Не удалось сохранить изменения. Попробуйте снова.');
       }
     };
 
-    // Получаем заметки при загрузке компонента
     onMounted(async () => {
       try {
-        await userStore.fetchNotes(); // Ждем завершения загрузки
-        initializeEditingState(); // Инициализируем состояние редактирования
+        await userStore.fetchNotes();
+        initializeEditingState();
       } catch (error) {
         console.error('Ошибка при загрузке заметок:', error);
       }
     });
 
     return {
-      notes, // Реактивные заметки
-      isLoading, // Реактивный флаг загрузки
-      editingState, // Реактивное состояние редактирования
+      notes,
+      isLoading,
+      editingState,
       formatDate,
       goBack,
       deleteNote,
