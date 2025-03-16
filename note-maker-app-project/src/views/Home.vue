@@ -86,7 +86,9 @@ export default defineComponent({
       ? route.params.session_id[0]
       : route.params.session_id;
 
-    // Состояние для хранения TTL
+    // --- Проверка времени сессии ---
+
+    // Состояние для хранения TTL сессии
     const sessionTTL = ref<number | null>(null);
 
     // Форматирование времени
@@ -141,7 +143,7 @@ export default defineComponent({
       });
     };
 
-    // Вызываем проверку сессии при загрузке страницы
+    // Вызываем проверку оставшегося времени сессии при загрузке страницы
     onMounted(() => {
       fetchSessionTTL();
       startTTLUpdate();
@@ -171,6 +173,8 @@ export default defineComponent({
         alert('Не удалось продлить сессию. Попробуйте снова.');
       }
     };
+
+    // --- Проверка ID сессии ---
 
     // Функция для проверки ID сессии
     const checkSession = async () => {
@@ -209,7 +213,7 @@ export default defineComponent({
       }
     };
 
-    // Вызываем проверку сессии при загрузке страницы
+    // Вызываем проверку ID сессии при загрузке страницы
     checkSession();
 
     // Переход к списку заметок
